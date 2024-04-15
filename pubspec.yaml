@@ -19,6 +19,7 @@ dependencies:
   google_sign_in: ^6.2.1
   shared_preferences: ^2.2.2
   cloud_firestore: ^4.15.10
+  provider: ^6.1.2
 
 dev_dependencies:
   flutter_test:
@@ -35,3 +36,4 @@ flutter:
   assets:
     # Add assets from the images directory to the application.
     - assets/images/
+    - assets/icons/

@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:studymatcherf/Components/my_button.dart';
+import 'package:studymatcherf/Components/square_tile.dart';
+import 'package:studymatcherf/Components/my_textfield.dart';
 import 'home_page.dart';
 
 class LoginPage extends StatelessWidget {
@@ -13,94 +16,169 @@ class LoginPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Login'),
-      ),
-      body: Padding(
-        padding: EdgeInsets.all(16.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            TextField(
-              controller: emailController,
-              decoration: InputDecoration(labelText: 'Email'),
-            ),
-            TextField(
-              controller: passwordController,
-              decoration: InputDecoration(labelText: 'Password'),
-              obscureText: true,
-            ),
-            SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () async {
-                String email = emailController.text.trim();
-                String password = passwordController.text.trim();
+      resizeToAvoidBottomInset: false,
+      backgroundColor: Colors.grey[300],
+      body: SafeArea(
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const SizedBox(height: 50),
 
-                if (email.isEmpty || password.isEmpty) {
-                  _showErrorDialog(
-                      context, 'Error', 'Please fill in all fields.');
-                  return;
-                }
+              const Icon(
+                Icons.lock,
+                size: 100,
+              ),
 
-                try {
-                  UserCredential userCredential =
-                      await _auth.signInWithEmailAndPassword(
-                    email: email,
-                    password: password,
-                  );
+              Text(
+                "Welcome to Study Group Matcher",
+                style: TextStyle(
+                  color: Colors.grey[700],
+                  fontSize: 16,
+                ),
+              ),
 
-                  if (userCredential.user != null) {
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(builder: (context) => HomePage()),
-                    );
-                  } else {
+              const SizedBox(height: 25),
+
+              //Username Textfield
+              MyTextField(
+                controller: emailController,
+                hintText: "E-mail",
+                obscureText: false,
+              ),
+
+              const SizedBox(height: 10),
+
+              //Password Textfield
+              MyTextField(
+                controller: passwordController,
+                hintText: "Password",
+                obscureText: true,
+              ),
+              const SizedBox(height: 20),
+
+              //Login Button
+              MyButton(
+                onTap: () async {
+                  String email = emailController.text.trim();
+                  String password = passwordController.text.trim();
+
+                  if (email.isEmpty || password.isEmpty) {
                     _showErrorDialog(
-                        context, 'Error', 'Invalid email or password.');
+                        context, 'Error', 'Please fill in all fields.');
+                    return;
                   }
-                } catch (e) {
-                  print('Error signing in: $e');
-                  String errorMessage =
-                      'An error occurred. Please try again later.';
-                  if (e is FirebaseAuthException) {
-                    switch (e.code) {
-                      case 'invalid-email':
-                        errorMessage = 'Invalid email address format.';
-                        break;
-                      case 'user-not-found':
-                        errorMessage =
-                            'User not found. Please check your email.';
-                        break;
-                      case 'wrong-password':
-                        errorMessage = 'Invalid password. Please try again.';
-                        break;
-                      case 'invalid-credential':
-                        errorMessage = 'Invalid authentication credentials.';
-                        break;
-                      default:
-                        errorMessage =
-                            'An error occurred. Please try again later.';
+
+                  try {
+                    UserCredential userCredential =
+                        await _auth.signInWithEmailAndPassword(
+                      email: email,
+                      password: password,
+                    );
+
+                    if (userCredential.user != null) {
+                      Navigator.pushReplacementNamed(context, '/home');
+                    } else {
+                      _showErrorDialog(
+                          context, 'Error', 'Invalid email or password.');
                     }
+                  } catch (e) {
+                    print('Error signing in: $e');
+                    String errorMessage =
+                        'An error occurred. Please try again later.';
+                    if (e is FirebaseAuthException) {
+                      switch (e.code) {
+                        case 'invalid-email':
+                          errorMessage = 'Invalid email address format.';
+                          break;
+                        case 'user-not-found':
+                          errorMessage =
+                              'User not found. Please check your email.';
+                          break;
+                        case 'wrong-password':
+                          errorMessage = 'Invalid password. Please try again.';
+                          break;
+                        case 'invalid-credential':
+                          errorMessage = 'Invalid authentication credentials.';
+                          break;
+                        default:
+                          errorMessage =
+                              'An error occurred. Please try again later.';
+                      }
+                    }
+                    _showErrorDialog(context, 'Error', errorMessage);
                   }
-                  _showErrorDialog(context, 'Error', errorMessage);
-                }
-              },
-              child: Text('Login'),
-            ),
-            SizedBox(height: 20),
-            TextButton(
-              onPressed: () {
-                Navigator.pushNamed(context, '/register');
-              },
-              child: Text('Register'),
-            ),
-            SizedBox(height: 20),
-            ElevatedButton.icon(
-              onPressed: () => _signInWithGoogle(context),
-              icon: Icon(Icons.login),
-              label: Text('Sign in with Google'),
-            ),
-          ],
+                },
+              ),
+
+              const SizedBox(height: 50),
+
+              //Or continue with
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 25.0),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Divider(
+                        thickness: 0.5,
+                        color: Colors.grey[400],
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                      child: Text(
+                        'Or continue with',
+                        style: TextStyle(color: Colors.grey[700]),
+                      ),
+                    ),
+                    Expanded(
+                      child: Divider(
+                        thickness: 0.5,
+                        color: Colors.grey[400],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              //Button for Sign in through Google
+              const SizedBox(height: 50),
+
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  SquareTile(
+                      onTap: () => _signInWithGoogle(context),
+                      imagePath: 'assets/images/google.png'),
+                ],
+              ),
+
+              //Register Text Button
+
+              const SizedBox(
+                height: 20,
+              ),
+
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text("Not a Member?"),
+                  TextButton(
+                    onPressed: () {
+                      Navigator.pushNamed(context, '/register');
+                    },
+                    child: const Text(
+                      'Register Now',
+                      style: TextStyle(
+                        color: Colors.blue,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ],
+              )
+            ],
+          ),
         ),
       ),
     );
@@ -130,10 +208,7 @@ class LoginPage extends StatelessWidget {
               .get();
       if (userDataSnapshot.exists) {
         // User exists, navigate to home page
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => HomePage()),
-        );
+        Navigator.pushReplacementNamed(context, '/home');
       } else {
         // User doesn't exist, display account not found alert
         _showErrorDialog(context, 'Account Not Found',

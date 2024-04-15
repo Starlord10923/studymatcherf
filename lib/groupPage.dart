@@ -4,18 +4,19 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:studymatcherf/Models/UserData.dart';
 import '../Models/Topic.dart';
 
-class GroupDetailsPage extends StatefulWidget {
+class GroupPage extends StatefulWidget {
   final Topic topic;
 
-  const GroupDetailsPage({required this.topic});
+  const GroupPage({required this.topic});
 
   @override
   _GroupDetailsPageState createState() => _GroupDetailsPageState();
 }
 
-class _GroupDetailsPageState extends State<GroupDetailsPage> {
+class _GroupDetailsPageState extends State<GroupPage> {
   final TextEditingController _messageController = TextEditingController();
   late String _userName;
+  final bool _darkMode = true; // Manually manage dark mode
 
   @override
   void initState() {
@@ -43,21 +44,25 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Group Details'),
+        title: Text(
+          widget.topic.name,
+          style: TextStyle(
+            color: _darkMode ? Colors.white : Colors.black,
+          ),
+        ),
+        backgroundColor:
+            _darkMode ? Colors.black : Colors.grey.withOpacity(0.3),
       ),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           ListTile(
-            title: Text('Group Name'),
-            subtitle: Text(widget.topic.name),
-          ),
-          ListTile(
-            title: Text('Group ID'),
-            subtitle: Text(widget.topic.id),
-          ),
-          ListTile(
-            title: Text('Users in Group'),
+            title: Text(
+              'Users in Group',
+              style: TextStyle(
+                color: _darkMode ? Colors.white : Colors.black,
+              ),
+            ),
             subtitle: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: widget.topic.joinedUsers
@@ -79,11 +84,24 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> {
                           } else {
                             var userData = snapshot.data!.data()!;
                             return Text(
-                                '${userData['name']} (${userData['email']})');
+                              '${userData['name']} (${userData['email']})',
+                              style: TextStyle(
+                                color: _darkMode ? Colors.white : Colors.black,
+                              ),
+                            );
                           }
                         },
                       ))
                   .toList(),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () => _leaveGroup(widget.topic.id),
+            child: Text(
+              'Leave Group',
+              style: TextStyle(
+                color: _darkMode ? Colors.white : Colors.black,
+              ),
             ),
           ),
           Expanded(
@@ -98,7 +116,14 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return Center(child: CircularProgressIndicator());
                 } else if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                  return Center(child: Text('No messages yet.'));
+                  return Center(
+                    child: Text(
+                      'No messages yet.',
+                      style: TextStyle(
+                        color: _darkMode ? Colors.white : Colors.black,
+                      ),
+                    ),
+                  );
                 } else {
                   return ListView.builder(
                     reverse: true,
@@ -107,8 +132,18 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> {
                       var messageData = snapshot.data!.docs[index].data()!;
                       var messageDataMap = messageData as Map<String, dynamic>;
                       return ListTile(
-                        title: Text(messageDataMap['text'] ?? ''),
-                        subtitle: Text(messageDataMap['sender'] ?? 'Unknown'),
+                        title: Text(
+                          messageDataMap['text'] ?? '',
+                          style: TextStyle(
+                            color: _darkMode ? Colors.white : Colors.black,
+                          ),
+                        ),
+                        subtitle: Text(
+                          messageDataMap['sender'] ?? 'Unknown',
+                          style: TextStyle(
+                            color: _darkMode ? Colors.white : Colors.black,
+                          ),
+                        ),
                       );
                     },
                   );
@@ -123,12 +158,18 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> {
                 Expanded(
                   child: TextField(
                     controller: _messageController,
-                    decoration: InputDecoration(labelText: 'Type your message'),
+                    decoration: InputDecoration(
+                      labelText: 'Type your message',
+                      labelStyle: TextStyle(
+                        color: _darkMode ? Colors.white : Colors.black,
+                      ),
+                    ),
                   ),
                 ),
                 IconButton(
                   icon: Icon(Icons.send),
                   onPressed: () => _sendMessage(widget.topic.id),
+                  color: _darkMode ? Colors.white : Colors.black,
                 ),
               ],
             ),
@@ -155,6 +196,25 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> {
       _messageController.clear();
     } catch (e) {
       print('Error sending message: $e');
+      // Handle error
+    }
+  }
+
+  void _leaveGroup(String groupId) async {
+    try {
+      // Remove the current user's ID from the joinedUsers list
+      await FirebaseFirestore.instance
+          .collection('topics')
+          .doc(groupId)
+          .update({
+        'joinedUsers':
+            FieldValue.arrayRemove([FirebaseAuth.instance.currentUser!.uid]),
+      });
+
+      // Navigate back to previous screen or handle navigation as needed
+      Navigator.pop(context);
+    } catch (e) {
+      print('Error leaving group: $e');
       // Handle error
     }
   }

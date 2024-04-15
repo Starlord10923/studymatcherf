@@ -6,6 +6,10 @@ import 'package:studymatcherf/Functions/google_auth.dart';
 class ProfilePage extends StatelessWidget {
   final GoogleAuth _googleAuth = GoogleAuth();
 
+  // Add your image URL here
+  final String imageUrl =
+      'https://media.npr.org/assets/img/2018/12/10/roger-the-kangaroo-sanctuary-alice-springs-2_custom-e0dfceba6d2665cc8cc0daa5a57eae2bcda46ad8-s1100-c50.jpg';
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -33,6 +37,8 @@ class ProfilePage extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                Image.network(imageUrl), // Display image from URL
+                SizedBox(height: 10),
                 Text(
                   'Name: ${userData['name']}',
                   style: TextStyle(fontSize: 18),
